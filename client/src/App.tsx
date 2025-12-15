@@ -23,7 +23,7 @@ const App: React.FC = () => {
     joinRoom,
     editRoom,
     deleteRoomWS,
-    resetVariables
+    resetStates
   } = useWS()
 
   useEffect(() => {
@@ -32,41 +32,43 @@ const App: React.FC = () => {
     }
   }, [])
   return (
-      <>
-          {
-            userDataContext?.userData.accessToken !== undefined && (Cookies.get('authenticated') === 'true')
-              ? <main className='flex h-full'>
-                    <Sidebar
-                        joinRoom={joinRoom}
-                        resetVariables={resetVariables}
-                        lastReceivedNote={lastReceivedNote}
-                        lastEditedNote={lastEditedNote}
-                        lastEditedRoom={lastEditedRoom}
-                        lastDeletedRoom={lastDeletedRoom}
-                        currentRoom={currentRoom}
-                        currentRoomSetter={setCurrentRoom}
-                     />
-                     {
-                         currentRoom !== undefined &&
-                             <RoomView
-                                 lastReceivedNote={lastReceivedNote}
-                                 lastEditedNote={lastEditedNote}
-                                 lastDeletedNote={lastDeletedNote}
-                                 lastEditedRoom={lastEditedRoom}
-                                 lastDeletedRoom={lastDeletedRoom}
-                                 sendNote={sendNote}
-                                 editNote={editNote}
-                                 deleteNote={deleteNote}
-                                 editRoom={editRoom}
-                                 deleteRoomWS={deleteRoomWS}
-                                 currentRoom={currentRoom}
-                                 setCurrentRoom={setCurrentRoom}
-                            />
-                     }
-                </main>
-              : <Navigate to="/login" replace={true}/>
-          }
-      </>
+    <>
+      {userDataContext?.userData.accessToken !== undefined &&
+      Cookies.get('authenticated') === 'true'
+        ? (
+        <main className="flex h-full">
+          <Sidebar
+            joinRoom={joinRoom}
+            resetVariables={resetStates}
+            lastReceivedNote={lastReceivedNote}
+            lastEditedNote={lastEditedNote}
+            lastEditedRoom={lastEditedRoom}
+            lastDeletedRoom={lastDeletedRoom}
+            currentRoom={currentRoom}
+            currentRoomSetter={setCurrentRoom}
+          />
+          {currentRoom !== undefined && (
+            <RoomView
+              lastReceivedNote={lastReceivedNote}
+              lastEditedNote={lastEditedNote}
+              lastDeletedNote={lastDeletedNote}
+              lastEditedRoom={lastEditedRoom}
+              lastDeletedRoom={lastDeletedRoom}
+              sendNote={sendNote}
+              editNote={editNote}
+              deleteNote={deleteNote}
+              editRoom={editRoom}
+              deleteRoomWS={deleteRoomWS}
+              currentRoom={currentRoom}
+              setCurrentRoom={setCurrentRoom}
+            />
+          )}
+        </main>
+          )
+        : (
+        <Navigate to="/login" replace={true} />
+          )}
+    </>
   )
 }
 

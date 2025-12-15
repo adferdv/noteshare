@@ -5,7 +5,6 @@ import Cookies from 'js-cookie'
 import { type Room } from '../@types/room'
 import { type NoteMessage, type NoteIDMessage } from '../@types/note'
 import { type Message } from '../@types/message'
-import { type User } from '../@types/user'
 import CryptoJS from 'crypto-js'
 
 const WSActions = {
@@ -26,7 +25,7 @@ interface UseWSResponse {
   lastDeletedNote: NoteIDMessage | undefined
   lastEditedRoom: Room | undefined
   lastDeletedRoom: Room | undefined
-  lastUserConnected: User | undefined
+  lastUserConnected: number | undefined
   joinRoom: (room: Room) => void
   editRoom: (room: Room) => void
   deleteRoomWS: (room: Room) => void
@@ -44,27 +43,26 @@ export function useWS (): UseWSResponse {
   const [lastDeletedRoom, setLastDeletedRoom] = useState<Room>()
   const [lastUserConnected, setLastUserConnected] = useState<number>()
 
-  const { sendMessage, lastMessage } = useWebSocket(
-    WS_PREFIX,
-    {
-      share: true,
-      shouldReconnect: () => false,
-      onOpen: () => {
-        console.log('connected to WS')
+  const { sendMessage, lastMessage } = useWebSocket(WS_PREFIX, {
+    share: true,
+    shouldReconnect: () => false,
+    onOpen: () => {
+      console.log('connected to WS')
 
-        const initMessage: Message = {
-          action: 'init-client',
-          message: {
-            access_token: Cookies.get('access_token'),
-            userId: Number(Cookies.get('user_id'))
-          }
+      const initMessage: Message = {
+        action: 'init-client',
+        message: {
+          access_token: Cookies.get('access_token'),
+          userId: Number(Cookies.get('user_id'))
         }
+      }
 
-        sendMessage(encryptMessage(initMessage))
-      },
-      onClose: () => { console.log('Disconnected from WS') }
+      sendMessage(encryptMessage(initMessage))
+    },
+    onClose: () => {
+      console.log('Disconnected from WS')
     }
-  )
+  })
   // every time a note is sent, append it to receivedNotes array
   useEffect((): void => {
     if (lastMessage !== null) {
@@ -152,20 +150,28 @@ export function useWS (): UseWSResponse {
   function encryptMessage (message: Message): string {
     const key = CryptoJS.enc.Utf8.parse(import.meta.env.VITE_ENCRYPTION_KEY)
     const nonce = CryptoJS.enc.Utf8.parse('1234567812345678')
-    const encryptedMessage = CryptoJS.AES.encrypt(JSON.stringify(message), key, {
-      iv: nonce,
-      padding: CryptoJS.pad.Pkcs7
-    })
+    const encryptedMessage = CryptoJS.AES.encrypt(
+      JSON.stringify(message),
+      key,
+      {
+        iv: nonce,
+        padding: CryptoJS.pad.Pkcs7
+      }
+    )
     return encryptedMessage.toString()
   }
 
   function decryptMessage (encryptedMessage: string): Message {
     const key = CryptoJS.enc.Utf8.parse(import.meta.env.VITE_ENCRYPTION_KEY)
     const nonce = CryptoJS.enc.Utf8.parse('1234567812345678')
-    const decryptedMessage = CryptoJS.AES.decrypt(encryptedMessage.toString(), key, {
-      iv: nonce,
-      padding: CryptoJS.pad.Pkcs7
-    })
+    const decryptedMessage = CryptoJS.AES.decrypt(
+      encryptedMessage.toString(),
+      key,
+      {
+        iv: nonce,
+        padding: CryptoJS.pad.Pkcs7
+      }
+    )
 
     return JSON.parse(decryptedMessage.toString(CryptoJS.enc.Utf8)) as Message
   }
