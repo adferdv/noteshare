@@ -18,8 +18,8 @@ func (server *APIServer) Run() error {
 	// CORS config
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{
-			os.Getenv("LOCAL_CLIENT_URL"),
-			os.Getenv("LOCAL_WSS_URL"),
+			os.Getenv("CLIENT_URL"),
+			os.Getenv("WSS_URL"),
 		},
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
